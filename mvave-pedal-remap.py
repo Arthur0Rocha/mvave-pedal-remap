@@ -27,7 +27,9 @@ LOW = 0
 
 VERBOSE = False
 
-CC_OFFSET = 32
+ABCD_CC_OFFSET = 32
+
+EF_CC_OUT = [30, 31]
 
 switch_states = [LOW] * PGM_CHANGE_CHANNELS
 def get_switch_state_and_toggle(index: int):
@@ -58,7 +60,7 @@ def remap(event, invert_pedal = True, pedal_output_cc = CC_VOLUME, switch_behavi
             if VERBOSE:
                 label = ['A', 'B', 'C', 'D']
                 print(f"{1+value//4}{label[value%4]}")
-            return [create_CC_event(channel, CC_OFFSET + value, HIGH)] # A, B, C, D
+            return [create_CC_event(channel, ABCD_CC_OFFSET + value, HIGH)] # A, B, C, D
         else:
             if VERBOSE:
                 print("W1")
@@ -67,11 +69,11 @@ def remap(event, invert_pedal = True, pedal_output_cc = CC_VOLUME, switch_behavi
         if param == CC_Y2:
             if VERBOSE:
                 print("E")
-            return [create_CC_event(channel, CC_PORTAMENTO_SW, HIGH)] # E
+            return [create_CC_event(channel, EF_CC_OUT[0], HIGH)] # E
         elif param == CC_03:
             if VERBOSE:
                 print("F")
-            return [create_CC_event(channel, CC_FOOT_SW, HIGH)] # F
+            return [create_CC_event(channel, EF_CC_OUT[1], HIGH)] # F
         elif param == CC_VOLUME:
             if invert_pedal:
                 value = HIGH - value
