@@ -50,9 +50,9 @@ def remap(event, invert_pedal = True, pedal_output_cc = CC_VOLUME, switch_behavi
     evtype = event[0]
     channel = event[7][0]
 
-    if evtype not in [PGM_CHANGE_CODE, CC_CODE]:
+    if evtype not in [PGM_CHANGE_CODE, CC_CODE]: # Device connection event perhaps
         if VERBOSE:
-            print("W0")
+            print("M0")
         return [event]
     param, value = event[7][4:]
     if evtype == PGM_CHANGE_CODE:
@@ -93,9 +93,8 @@ def loop():
     while True:
         time.sleep(0.001)
         while alsaseq.inputpending():
-            out = remap(alsaseq.input())
-            for o in out:
-                alsaseq.output(o)
+            for event in remap(alsaseq.input()):
+                alsaseq.output(event)
 
 if __name__ == "__main__":
     init()
