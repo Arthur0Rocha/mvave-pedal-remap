@@ -18,6 +18,7 @@ CC_USER_1 = 26
 CC_USER_2 = 27
 CC_USER_3 = 28
 CC_USER_4 = 29
+CC_DAMPER = 64
 CC_PORTAMENTO_SW = 65
 CC_FOOT_SW = 82
 
@@ -25,7 +26,11 @@ MVAVE_VALUE = 5
 HIGH = 127
 LOW = 0
 
-VERBOSE = False
+DAMPER_UPPER_THRESHOLD = 90
+DAMPER_LOWER_THRESHOLD = 60
+DAMPER_STATE = LOW
+
+VERBOSE = True 
 
 ABCD_CC_OFFSET = 32
 
@@ -46,7 +51,8 @@ class SwitchBehaviour(Enum): # TODO include this functionality
 def create_CC_event(channel, param, value):
     return (CC_CODE, 0, 0, 253, (0, 0), (0, 0), (0, 0), (channel, 0, 0, 0, param, value))
 
-def remap(event, invert_pedal = True, pedal_output_cc = CC_VOLUME, switch_behaviour : SwitchBehaviour = SwitchBehaviour.HIGH_ONLY):
+def remap(event, invert_pedal = True, pedal_output_cc = CC_DAMPER, switch_behaviour : SwitchBehaviour = SwitchBehaviour.HIGH_ONLY):
+    global DAMPER_STATE
     evtype = event[0]
     channel = event[7][0]
 
@@ -77,6 +83,21 @@ def remap(event, invert_pedal = True, pedal_output_cc = CC_VOLUME, switch_behavi
         elif param == CC_VOLUME:
             if invert_pedal:
                 value = HIGH - value
+            if pedal_output_cc == CC_DAMPER:
+                if value > DAMPER_UPPER_THRESHOLD:
+                    if DAMPER_STATE == HIGH:
+                        return []
+                    else:
+                        value = HIGH
+                        DAMPER_STATE = HIGH
+                elif value < DAMPER_LOWER_THRESHOLD:
+                    if DAMPER_STATE == LOW:
+                        return []
+                    else:
+                        value = LOW
+                        DAMPER_STATE = LOW
+                else:
+                    return []               
             if VERBOSE:
                 print(f"PEDAL - {value:03d}")
             return [create_CC_event(channel, pedal_output_cc, value)] # PEDAL
